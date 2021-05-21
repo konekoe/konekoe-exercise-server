@@ -1,0 +1,37 @@
+# TODO: Add deployment stage
+stages:
+  - test
+  - build
+
+
+Test:
+  stage: test
+  # Same image as in the Dockerfile
+  image: node:14.15.3
+  tags:
+    - test
+  cache:
+    paths:
+      - node_modules/
+  except:
+    - manual
+  variables:
+    ENV_FILE_PATH: /var/konekoe-env/.env_test.json
+  script:
+    - node .runner-preinstall.js
+    - npm install --only=dev
+    - npm install konekoe-database
+    - npm run test
+
+Build:
+  stage: build
+  tags:
+    - build
+  only:
+    - master
+    - dev
+  script:
+    - python3 .runner-preinstall.py
+    - if [ "$CI_COMMIT_REF_NAME" = "master" ]; then TAG="latest"; else TAG="dev"; fi
+    - DOCKER_BUILDKIT=1 docker build $CI_BUILD_FLAGS -t "huzla/konekoe-exercise-server:${TAG}" .
+    - docker image prune -f

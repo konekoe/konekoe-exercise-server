@@ -1,0 +1,10 @@
+#Dependencies
+node_modules/
+
+#config
+.env*.json
+.auth/
+
+#logs
+log/
+
